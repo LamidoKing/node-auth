@@ -1,15 +1,9 @@
-import express from "express";
 import session from "express-session";
 import mongoose from "mongoose";
 import connectRedis from "connect-redis";
 import Redis from "ioredis";
-import {
-  APP_PORT,
-  REDIS_OPTIONS,
-  SESSION_OPTIONS,
-  MONGO_URI,
-  MONGO_OPTIONS
-} from "./config";
+import { APP_PORT, REDIS_OPTIONS, MONGO_URI, MONGO_OPTIONS } from "./config";
+import { createApp } from "./app";
 
 (async () => {
   try {
@@ -19,16 +13,9 @@ import {
 
     const client = new Redis(REDIS_OPTIONS);
 
-    const app = express();
+    const store = new RedisStore({ client });
 
-    app.use(
-      session({
-        ...SESSION_OPTIONS,
-        store: new RedisStore({ client })
-      })
-    );
-
-    app.get("/", (req, res) => res.json({ message: "Ok" }));
+    const app = createApp(store);
 
     app.listen(APP_PORT, () => console.log(`http://localhost:${APP_PORT}`));
   } catch (error) {
